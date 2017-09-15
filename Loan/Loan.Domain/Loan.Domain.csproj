@@ -50,6 +50,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
+    <Compile Include="DatabaseFactory.cs" />
     <Compile Include="DBEntities.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -65,7 +66,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DBEntities.edmx</DependentUpon>
     </Compile>
+    <Compile Include="IDatabaseFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WCFLog.cs">
+      <DependentUpon>DBEntities.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EntityDeploy Include="DBEntities.edmx">

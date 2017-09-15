@@ -25,5 +25,6 @@ namespace Loan.Domain
             throw new UnintentionalCodeFirstException();
         }
     
+        public virtual DbSet<WCFLog> WCFLogs { get; set; }
     }
 }
