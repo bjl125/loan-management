@@ -10,6 +10,7 @@ using Loan.Domain;
 using System.Data;
 using System.Data.SqlClient;
 using Loan.Repositories.Extension;
+using System.Linq.Dynamic;
 
 namespace Loan.Repositories
 {
@@ -148,7 +149,12 @@ namespace Loan.Repositories
         public IEnumerable<T> GetManyByPage(int pageindex, int pagesize, ref int totalCount, Expression<Func<T, bool>> where, List<Tuple<string, string>> sortExpressions)
         {
             totalCount = dbset.Where(where).Count();
-            return dbset.Where(where).MultipleSort(sortExpressions).Skip((pageindex - 1) * pagesize).Take(pagesize);
+            return dbset.Where(where).OrderBy(sortExpressions).Skip((pageindex - 1) * pagesize).Take(pagesize);
+        }
+        public IEnumerable<T> GetManyByPage(int pageindex, int pagesize, ref int totalCount, Expression<Func<T, bool>> where, string ordering)
+        {
+            totalCount = dbset.Where(where).Count();
+            return dbset.Where(where).OrderBy(ordering).Skip((pageindex - 1) * pagesize).Take(pagesize);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -50,6 +51,82 @@ namespace Loan.Repositories.Extension
             return query;
         }
 
+        public static IQueryable<T> OrderBy<T>(this IQueryable<T> data, List<Tuple<string, string>> sortExpressions)
+        {
+            return (IQueryable<T>)OrderBy((IQueryable)data, sortExpressions);
+        }
+        public static IQueryable OrderBy(this IQueryable source, List<Tuple<string, string>> sortExpressions)
+        {
+            Type sourceType = source.ElementType;
+            Expression queryExpr = source.Expression;
+            ParameterExpression[] parameters = new ParameterExpression[] {
+                Expression.Parameter(source.ElementType, "") };
+            string methodAsc = "OrderBy";
+            string methodDesc = "OrderByDescending";
+
+            for (int i = 0; i < sortExpressions.Count; i++)
+            {
+
+                MemberInfo member = FindPropertyOrField(sourceType, sortExpressions[i].Item1, queryExpr == null);
+                if (member == null)
+                    throw new NullReferenceException();
+
+                Expression memberExpre = member is PropertyInfo ?
+                    Expression.Property(parameters[0], (PropertyInfo)member) :
+                    Expression.Field(parameters[0], (FieldInfo)member);
+
+                queryExpr = Expression.Call(
+                    typeof(Queryable), "asc".Equals(sortExpressions[i].Item2, StringComparison.OrdinalIgnoreCase) ? methodAsc : methodDesc,
+                    new Type[] { source.ElementType, memberExpre.Type },
+                    queryExpr, Expression.Quote(Expression.Lambda(memberExpre, parameters)));
+                methodAsc = "ThenBy";
+                methodDesc = "ThenByDescending";
+
+
+            }
+
+            return source.Provider.CreateQuery(queryExpr);
+            //return source;
+        }
+        static MemberInfo FindPropertyOrField(Type type, string memberName, bool staticAccess)
+        {
+            BindingFlags flags = BindingFlags.Public | BindingFlags.DeclaredOnly |
+                (staticAccess ? BindingFlags.Static : BindingFlags.Instance);
+            foreach (Type t in SelfAndBaseTypes(type))
+            {
+                MemberInfo[] members = t.FindMembers(MemberTypes.Property | MemberTypes.Field,
+                    flags, Type.FilterNameIgnoreCase, memberName);
+                if (members.Length != 0) return members[0];
+            }
+            return null;
+        }
+        static IEnumerable<Type> SelfAndBaseTypes(Type type)
+        {
+            if (type.IsInterface)
+            {
+                List<Type> types = new List<Type>();
+                AddInterface(types, type);
+                return types;
+            }
+            return SelfAndBaseClasses(type);
+        }
+        static void AddInterface(List<Type> types, Type type)
+        {
+            if (!types.Contains(type))
+            {
+                types.Add(type);
+                foreach (Type t in type.GetInterfaces()) AddInterface(types, t);
+            }
+        }
+        static IEnumerable<Type> SelfAndBaseClasses(Type type)
+        {
+            while (type != null)
+            {
+                yield return type;
+                type = type.BaseType;
+            }
+        }
+
         /// <summary>
         /// 通过列名称及排序规则实现多列排序
         /// 如果输入的列不存在抛出异常
@@ -96,7 +173,7 @@ namespace Loan.Repositories.Extension
             return query;
         }
 
-        public static Expression<Func<TSource,Object>> GetExpression<TSource>(string propertyName)
+        public static Expression<Func<TSource, Object>> GetExpression<TSource>(string propertyName)
         {
             // x=>x.name=="dd"
             //x形如上
@@ -128,7 +205,7 @@ namespace Loan.Repositories.Extension
         }
 
 
-        public static Expression<Func<TSource, TResult>> GetExpression<TSource,TResult>(string propertyName)
+        public static Expression<Func<TSource, TResult>> GetExpression<TSource, TResult>(string propertyName)
         {
             // x=>x.name=="dd"
             //x形如上

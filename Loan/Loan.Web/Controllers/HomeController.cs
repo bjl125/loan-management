@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using Loan.Repositories.Repositories;
+using Loan.Domain;
+
 
 namespace Loan.Web.Controllers
 {
@@ -25,6 +28,18 @@ namespace Loan.Web.Controllers
             ViewBag.Message = "Your contact page.";
 
             return View();
+        }
+
+        public ActionResult GetList()
+        {
+            var request = HttpContext;
+
+            LoanRepository lr = new LoanRepository(new DatabaseFactory());
+            int count = 0;
+            var list = lr.GetLogs(1, 10, ref count);
+
+
+            return Json(list, JsonRequestBehavior.AllowGet);
         }
     }
 }

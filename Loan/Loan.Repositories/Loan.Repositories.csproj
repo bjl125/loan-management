@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Class1.cs" />
+    <Compile Include="Extension\DynamicLibrary.cs" />
     <Compile Include="Extension\MultiSortExtension.cs" />
     <Compile Include="IRepositories\ILoanRepository.cs" />
     <Compile Include="IRepositoryBase.cs" />

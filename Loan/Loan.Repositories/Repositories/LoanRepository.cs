@@ -21,7 +21,16 @@ namespace Loan.Repositories.Repositories
             Expression<Func<WCFLog, bool>> where = item => true;
             List<Tuple<string, string>> orderby = new List<Tuple<string, string>>();
 
+            
+            return this.GetManyByPage(page, size, ref total, where, "ID desc");
+        }
+        public IEnumerable<WCFLog> GetOrderLogs(int page, int size, ref int total)
+        {
+            Expression<Func<WCFLog, bool>> where = item => true;
+            List<Tuple<string, string>> orderby = new List<Tuple<string, string>>();
+
             orderby.Add(new Tuple<string, string>("ID", "asc"));
+            orderby.Add(new Tuple<string, string>("Date", "Desc"));
             return this.GetManyByPage(page, size, ref total, where, orderby);
         }
     }

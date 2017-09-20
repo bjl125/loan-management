@@ -24,5 +24,21 @@ namespace Loan.Web.Test.Repository
                 throw ex;
             }
         }
+
+        [TestMethod]
+        public void TestQueryOrderByPage()
+        {
+            try
+            {
+                LoanRepository lr = new LoanRepository(new DatabaseFactory());
+                int s = 0;
+                var list = lr.GetOrderLogs(1, 5, ref s);
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
     }
 }

@@ -545,6 +545,16 @@
   <ItemGroup>
     <Content Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Loan.Domain\Loan.Domain.csproj">
+      <Project>{8a519643-5c97-4941-819c-35ea290a65f8}</Project>
+      <Name>Loan.Domain</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Loan.Repositories\Loan.Repositories.csproj">
+      <Project>{0033869c-9b75-4088-8cb0-07744aceef96}</Project>
+      <Name>Loan.Repositories</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>

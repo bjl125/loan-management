@@ -31,6 +31,8 @@ namespace Loan.Repositories
         IEnumerable<T> GetManyByPage<TKey>(int pageindex, int pagesize,ref int totalCount, Expression<Func<T, bool>> where, Expression<Func<T, TKey>> order, bool isAsc);
         IEnumerable<T> GetManyByPage(int pageindex, int pagesize,ref int totalCount, Expression<Func<T, bool>> where, List<Tuple<string, string>> sortExpressions);
 
+        IEnumerable<T> GetManyByPage(int pageindex, int pagesize, ref int totalCount, Expression<Func<T, bool>> where, string ordering);
+
         #region 扩展
 
         IEnumerable<TT> ExecuteSqlQuery<TT>(string sql);
