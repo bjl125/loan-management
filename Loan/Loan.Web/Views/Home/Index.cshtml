@@ -6,39 +6,197 @@
     <link href="~/assets/css/jquery-ui.min.css" rel="stylesheet" />
     <link href="~/assets/css/ui.jqgrid.min.css" rel="stylesheet" />
 }
+<div ng-controller="homeController">
+    <table id="grid-table"></table>
 
-<table id="grid-table"></table>
+    <div id="grid-pager"></div>
 
-<div id="grid-pager"></div>
-
+    <div id="eidt-form" class="hide">
+        <div>
+            <h1>this is a form</h1>
+        </div>
+        <div>{{Level}}</div>
+        <h1>{{Id}}</h1>
+    </div>
+</div>
 @section scripts{
-<script src="~/assets/js/jquery.jqGrid.min.js"></script>
+    <script src="~/assets/js/jquery-ui.min.js"></script>
+    <script src="~/assets/js/jquery.jqGrid.min.js"></script>
+    <script src="~/assets/js/grid.locale-en.js"></script>
     <script>
         $(function () {
+            var grid_selector = "#grid-table";
+            var pager_selector = "#grid-pager";
+
+
+            var parent_column = $(grid_selector).parent();
+            //resize to fit page size
+            $(window).on('resize.jqGrid', function () {
+                $(grid_selector).jqGrid('setGridWidth', parent_column.width());
+            })
+
+            //resize on sidebar collapse/expand
+            $(document).on('settings.ace.jqGrid', function (ev, event_name, collapsed) {
+                if (event_name === 'sidebar_collapsed' || event_name === 'main_container_fixed') {
+                    //setTimeout is for webkit only to give time for DOM changes and then redraw!!!
+                    setTimeout(function () {
+                        $(grid_selector).jqGrid('setGridWidth', parent_column.width());
+                    }, 20);
+                }
+            })
+
+            //设置图标样式
+            var base_css_definition = {
+                icon_first: "ace-icon fa fa-angle-double-left bigger-140",
+                icon_prev: "ace-icon fa fa-angle-left bigger-140",
+                icon_next: "ace-icon fa fa-angle-right bigger-140",
+                icon_end: "ace-icon fa fa-angle-double-right bigger-140",
+            }
+            $.extend($.jgrid.styleUI.jQueryUI.base, base_css_definition);
+
+
+
+
             $("#grid-table").jqGrid({
                 url: '/Home/GetList',
                 datatype: "json",
-                colNames: ['Inv No', 'Date', 'Client', 'Amount', 'Tax', 'Total', 'Notes'],
+                colNames: ['', 'Actions', 'Inv No', 'Date', 'Client', 'Amount', 'Tax'],
                 colModel: [
-                    { name: 'ID', index: 'ID', width: 55 },
+                    {
+                        name: 'myac', index: '', width: 80, fixed: true, sortable: false, resize: false,
+                        formatter: 'actions',
+                        formatoptions: {
+                            keys: true,
+                            //delbutton: false,//disable delete button
+
+                            delOptions: { recreateForm: true, beforeShowForm: beforeDeleteCallback },
+                            editformbutton: true,
+                            editOptions: { recreateForm: true }
+                        }
+                    },
+                    {
+                        name: 'cusact', index: '', width: 80, fixed: true, sortable: false, resize: false,
+                        formatter: actionsFmatter
+                    },
+                    { name: 'ID', index: 'ID', width: 80 },
                     { name: 'Level', index: 'Level', width: 90 },
                     { name: 'Logger', index: 'Logger', width: 100 },
                     { name: 'Message', index: 'Message', align: "left" },
-                    { name: 'Exception', index: 'Exception', width: 80, align: "right" },
-                    { name: 'total', index: 'total', width: 80, align: "right" },
-                    { name: 'note', index: 'note', width: 150, sortable: false }
+                    { name: 'Exception', index: 'Exception', width: 80, align: "right" }
                 ],
                 rowNum: 10,
                 rowList: [10, 20, 30],
                 pager: '#grid-pager',
-                sortname: 'id',
+                sortname: 'ID',
                 viewrecords: true,
                 sortorder: "desc",
-                caption: "JSON Example"
+                rownumbers: true,
+                height: 600,
+                autowidth: true,
+                multiselect: true,
+                caption: "JSON Example",
+                loadComplete: function () {
+                    var table = this;
+                    setTimeout(function () {
+                        enableTooltips();
+                    }, 0);
+                }
             });
-            $("#grid-table").jqGrid('navGrid', '#grid-pager', { edit: false, add: false, del: false });
+            $("#grid-table").jqGrid('navGrid', '#grid-pager', {
+                edit: false, add: false, del: false,
+                search: false,
+                refresh: true,
+                refreshicon: 'ace-icon fa fa-refresh green',
+            });
+            var jQueryUICSS = $.jgrid.styleUI.jQueryUI;
+            console.log(jQueryUICSS);
 
-        });
+
+
+            $(window).triggerHandler('resize.jqGrid');//trigger window resize to make the grid get the correct size
+
+
+            function actionsFmatter(cellvalue, options, rowObject) {
+                // do something here
+                var actlink = '<a href="javascript:void()" data-toggle="tooltip" data-placement="top" title="Delete" onclick=""><i class="fa fa-trash-o fa-lg red"></i></a>';
+                actlink += ' <a href="javascript:void()" onclick= "openEditDialog(' + rowObject.ID + ')" > <i class="fa fa-pencil fa-lg"></i></a> ';
+                return actlink;
+            }
+
+            function beforeDeleteCallback(e) {
+                var form = $(e[0]);
+                if (form.data('styled')) return false;
+
+                form.closest('.ui-jqdialog').find('.ui-jqdialog-titlebar').wrapInner('<div class="widget-header" />')
+                style_delete_form(form);
+
+                form.data('styled', true);
+            }
+            function enableTooltips() {
+                $('.navtable .ui-pg-button').tooltip({ container: 'body' });
+                $('[data-toggle="tooltip"]').tooltip({ container: 'body' });
+            }
+
+            //override dialog's title function to allow for HTML titles
+            $.widget("ui.dialog", $.extend({}, $.ui.dialog.prototype, {
+                _title: function (title) {
+                    var $title = this.options.title || '&nbsp;'
+                    if (("title_html" in this.options) && this.options.title_html == true)
+                        title.html($title);
+                    else title.text($title);
+                }
+            }));
+
+            $('thead div[id^="jqgh_"]').attr("style", "text-align:center;");
+        });//jquery end
+
+
+
+        function openEditDialog(id) {
+            //angularjs
+            var $scope = getScope("homeController");
+            $scope.Id = id;
+            $scope.$apply();
+
+            //jquery ui dialog
+            var dialog = $("#eidt-form").removeClass('hide').dialog({
+                modal: true,
+                height: 400,
+                width: 500,
+                title: "<div class='widget-header widget-header-small'><h4 class='smaller'><i class='ace-icon fa fa-check'></i>Dialog " + id + "</h4></div>",
+                title_html: true,
+                buttons: [
+                    {
+                        text: "Cancel",
+                        "class": "btn btn-minier",
+                        click: function () {
+                            $(this).dialog("close");
+                        }
+                    },
+                    {
+                        text: "OK",
+                        "class": "btn btn-primary btn-minier",
+                        click: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                ]
+            });
+        }
+
+        function getScope(ctrName) {
+            var sel = 'div[ng-controller="' + ctrName + '"]';
+            return angular.element(sel).scope();
+        }
+
+        angular.module("mainApp", [])
+            .controller("homeController", function ($scope, $http, $location) {
+                $scope.Level = "Level 2";
+                $scope.Id;
+
+            });
+
+
 
     </script>
 }

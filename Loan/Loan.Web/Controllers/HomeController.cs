@@ -5,6 +5,7 @@ using System.Web;
 using System.Web.Mvc;
 using Loan.Repositories.Repositories;
 using Loan.Domain;
+using Loan.Domain.RequestResponse;
 
 
 namespace Loan.Web.Controllers
@@ -34,12 +35,17 @@ namespace Loan.Web.Controllers
         {
             var request = HttpContext;
 
+            int rows = Request["rows"] != null ? int.Parse(Request["rows"].ToString()) : 10;
+            int page = Request["page"] != null ? int.Parse(Request["page"].ToString()) : 1;
+
             LoanRepository lr = new LoanRepository(new DatabaseFactory());
             int count = 0;
-            var list = lr.GetLogs(1, 10, ref count);
+            var list = lr.GetLogs(page, rows, ref count);
+
+            var dataresult = new DataGridByPageResponse<WCFLog>(page, rows, count, list);
 
 
-            return Json(list, JsonRequestBehavior.AllowGet);
+            return Json(dataresult, JsonRequestBehavior.AllowGet);
         }
     }
 }
