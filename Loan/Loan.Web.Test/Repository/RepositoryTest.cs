@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Loan.Repositories.Repositories;
 using Loan.Domain;
-
+using System.Collections.Generic;
 
 namespace Loan.Web.Test.Repository
 {
@@ -16,7 +16,9 @@ namespace Loan.Web.Test.Repository
             {
                 LoanRepository lr = new LoanRepository(new DatabaseFactory());
                 int s = 0;
-                var list = lr.GetLogs(1, 5, ref s);
+                List<Tuple<string, string>> sort = new List<Tuple<string, string>>();
+                sort.Add(new Tuple<string, string>("ID", "desc"));
+                var list = lr.GetLogs(1, 5, ref s, sort);
 
             }
             catch (Exception ex)

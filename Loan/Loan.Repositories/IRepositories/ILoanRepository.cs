@@ -9,6 +9,6 @@ namespace Loan.Repositories.IRepositories
 {
     public interface ILoanRepository 
     {
-        IEnumerable<WCFLog> GetLogs(int page, int size, ref int total);
+        IEnumerable<WCFLog> GetLogs(int page, int size, ref int total, List<Tuple<string, string>> sort);
     }
 }

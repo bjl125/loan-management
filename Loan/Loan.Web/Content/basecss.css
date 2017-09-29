@@ -1,0 +1,44 @@
+﻿
+body {
+    font-family: "Microsoft YaHei","微软雅黑","Helvetica Neue",Helvetica,Arial;
+}
+
+/*数据表格样式*/
+.table-linkbtn-div {
+    height: 25px;
+    width: 20px;
+    line-height: 25px;
+    float: left;
+    cursor: pointer;
+    margin-left: 10px;
+    opacity:0.85;
+}
+
+    .table-linkbtn-div:hover {
+        opacity: 1;
+        font-weight: 400;
+        font-size: 14px;
+    }
+
+.table-linkbtn {
+    text-decoration: none;
+    /*margin-left:5px;*/
+    opacity: 0.8;
+}
+
+    .table-linkbtn:hover {
+        opacity: 1;
+        text-decoration: none;
+        font-weight: 400;
+        font-size: 15px;
+    }
+
+/*数据表结束*/
+
+
+/*表单*/
+.has-feedback .form-control-feedback {
+    line-height: 34px;
+    right: -15px !important;
+}
+/*表单End*/

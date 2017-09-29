@@ -16,14 +16,15 @@ namespace Loan.Repositories.Repositories
         {
         }
 
-        public IEnumerable<WCFLog> GetLogs(int page, int size, ref int total)
+        public IEnumerable<WCFLog> GetLogs(int page, int size, ref int total,List<Tuple<string,string>> sort)
         {
             Expression<Func<WCFLog, bool>> where = item => true;
             List<Tuple<string, string>> orderby = new List<Tuple<string, string>>();
 
             
-            return this.GetManyByPage(page, size, ref total, where, "ID desc");
+            return this.GetManyByPage(page, size, ref total, where, sort);
         }
+        
         public IEnumerable<WCFLog> GetOrderLogs(int page, int size, ref int total)
         {
             Expression<Func<WCFLog, bool>> where = item => true;

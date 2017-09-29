@@ -5,24 +5,84 @@
 @section styles{
     <link href="~/assets/css/jquery-ui.min.css" rel="stylesheet" />
     <link href="~/assets/css/ui.jqgrid.min.css" rel="stylesheet" />
+    <link href="~/Content/formValidation.css" rel="stylesheet" />
+
 }
 <div ng-controller="homeController">
+    <div class="row" style="margin-bottom:20px;">
+        <div class="col-sm-4">
+            <div class="input-group">
+                <input class="form-control date-picker" id="id-date-picker-1" type="text" data-date-format="yyyy-mm-dd" />
+                <span class="input-group-addon">
+                    <i class="fa fa-calendar bigger-110"></i>
+                </span>
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="input-group">
+                <span class="input-group-addon">
+                    <i class="fa fa-calendar bigger-110"></i>
+                </span>
+                <input class="form-control daterange-picker" type="text" name="date-range-picker" id="id-date-range-picker-1" />
+            </div>
+        </div>
+        <div class="col-sm-4">
+            <div class="input-daterange input-group">
+                <span class="input-group-addon">
+                    <i class="fa fa-calendar bigger-110"></i>
+                </span>
+                <input type="text" class=" form-control" name="start" />
+                <span class="input-group-addon">
+                    <i class="fa fa-arrows-h"></i>
+                </span>
+
+                <input type="text" class=" form-control" name="end" />
+            </div>
+        </div>
+    </div>
     <table id="grid-table"></table>
 
     <div id="grid-pager"></div>
 
-    <div id="eidt-form" class="hide">
+    <div id="dialog-confirm" class="hide">
         <div>
-            <h1>this is a form</h1>
+            These items will be permanently deleted and cannot be recovered.
         </div>
+    </div><!-- #dialog-confirm -->
+    <div id="eidt-form" class="hide" style="padding:5px 20px;">
+        <form id="myform" method="post" class="form-horizontal">
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label class="col-sm-2 control-label">名称</label>
+                <div class="col-sm-9">
+                    <input type="text" name="title" data-fv-notempty class="form-control" placeholder="name" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">时间</label>
+                <div class="col-sm-9">
+                    <div class="input-group">
+                        <input class="form-control date-picker" id="id-date-picker2" name="formdate" type="text" ng-model="formdate" />
+                        <span class="input-group-addon">
+                            <i class="fa fa-calendar bigger-110"></i>
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div>
+
+            </div>
+        </form>
         <div>{{Level}}</div>
         <h1>{{Id}}</h1>
+        <div>{{formdate}}</div>
     </div>
 </div>
 @section scripts{
     <script src="~/assets/js/jquery-ui.min.js"></script>
     <script src="~/assets/js/jquery.jqGrid.min.js"></script>
     <script src="~/assets/js/grid.locale-en.js"></script>
+    <script src="~/Scripts/formValidation.min.js"></script>
     <script>
         $(function () {
             var grid_selector = "#grid-table";
@@ -63,7 +123,7 @@
                 colNames: ['', 'Actions', 'Inv No', 'Date', 'Client', 'Amount', 'Tax'],
                 colModel: [
                     {
-                        name: 'myac', index: '', width: 80, fixed: true, sortable: false, resize: false,
+                        name: 'myac', index: '', width: 100, fixed: true, sortable: false, resize: false,
                         formatter: 'actions',
                         formatoptions: {
                             keys: true,
@@ -75,7 +135,7 @@
                         }
                     },
                     {
-                        name: 'cusact', index: '', width: 80, fixed: true, sortable: false, resize: false,
+                        name: 'cusact', index: '', width: 100, fixed: true, sortable: false, resize: false,
                         formatter: actionsFmatter
                     },
                     { name: 'ID', index: 'ID', width: 80 },
@@ -109,7 +169,7 @@
                 refreshicon: 'ace-icon fa fa-refresh green',
             });
             var jQueryUICSS = $.jgrid.styleUI.jQueryUI;
-            console.log(jQueryUICSS);
+            //console.log(jQueryUICSS);
 
 
 
@@ -118,8 +178,12 @@
 
             function actionsFmatter(cellvalue, options, rowObject) {
                 // do something here
-                var actlink = '<a href="javascript:void()" data-toggle="tooltip" data-placement="top" title="Delete" onclick=""><i class="fa fa-trash-o fa-lg red"></i></a>';
-                actlink += ' <a href="javascript:void()" onclick= "openEditDialog(' + rowObject.ID + ')" > <i class="fa fa-pencil fa-lg"></i></a> ';
+
+                var actlink = '';
+               // actlink += '<a href="javascript:void(0);" data-toggle="tooltip" data-placement="top" title="Delete" onclick="" class="table-linkbtn"><i class="fa fa-trash-o fa-lg red"></i></a>';
+                //actlink += ' <a href="javascript:void(0);"  data-toggle="tooltip" data-placement="top" title="Edit" onclick= "openEditDialog(' + rowObject.ID + ')" class="table-linkbtn" > <i class="fa fa-pencil fa-lg"></i></a> ';
+                actlink += '<div class="table-linkbtn-div" data-toggle="tooltip" title="Edit selected row" onclick= "openEditDialog(' + rowObject.ID + ')"><i class="fa fa-pencil fa-lg"></i></div>';
+                actlink += '<div class="table-linkbtn-div" data-toggle="tooltip" title="Edit selected row" onclick= "delConfirm(' + rowObject.ID + ')"><i class="fa fa-trash-o fa-lg red"></i></div>';
                 return actlink;
             }
 
@@ -151,6 +215,83 @@
         });//jquery end
 
 
+        $(function () {
+            $('.date-picker').bdatepicker({
+                format: "yyyy/mm/dd",
+                autoclose: true,
+                todayHighlight: true,
+                zIndexOffset: 2000
+            }).next().on(ace.click_event, function () {
+                $(this).prev().focus();
+            });
+            $('#myform .date-picker').bdatepicker().on('changeDate', function (e) {
+                //console.log(e);
+                $('#myform').formValidation('revalidateField', 'formdate');
+                //alert(e.date);
+            });
+
+            $('.input-daterange').bdatepicker({
+                format: "yyyy/mm/dd",
+                autoclose: true,
+                todayHighlight: true,
+                zIndexOffset: 2000
+            });
+
+
+            $('.daterange-picker').daterangepicker({
+                'applyClass': 'btn-sm btn-success',
+                'cancelClass': 'btn-sm btn-default',
+                locale: {
+                    applyLabel: '确认',
+                    cancelLabel: '清除',
+                }
+            }).prev().on(ace.click_event, function () {
+                $(this).next().focus();
+            });
+
+            $('.daterange-picker').on('apply.daterangepicker', function (ev, picker) {
+                $(this).val(picker.startDate.format('YYYY/MM/DD') + ' - ' + picker.endDate.format('YYYY/MM/DD'));
+            });
+            $('.daterange-picker').on('cancel.daterangepicker', function (ev, picker) {
+                $(this).val('');
+            });
+        });
+
+        //form validation
+        $(function () {
+            $('#myform').formValidation({
+                framework: 'bootstrap',
+                icon: {
+                    valid: 'ace-icon fa fa-check-circle fa-lg',
+                    invalid: 'ace-icon fa fa-times-circle fa-lg',
+                    validating: 'ace-icon fa fa-refresh fa-lg'
+                },
+                fields: {
+                    title: {
+                        validators: {
+                            stringLength: {
+                                min: 2,
+                                max: 20,
+                                message: '输入长度2-20'
+                            }
+                        }
+                    },
+                    formdate: {
+                        validators: {
+                            notEmpty: {
+                                message: '请输入'
+                            },
+                            date: {
+                                format: 'YYYY/MM/DD',
+                                message: '日期格式错误'
+                            }
+
+                        }
+                    }
+
+                } //fields end
+            });
+        });
 
         function openEditDialog(id) {
             //angularjs
@@ -158,12 +299,14 @@
             $scope.Id = id;
             $scope.$apply();
 
+
+
             //jquery ui dialog
             var dialog = $("#eidt-form").removeClass('hide').dialog({
                 modal: true,
-                height: 400,
-                width: 500,
-                title: "<div class='widget-header widget-header-small'><h4 class='smaller'><i class='ace-icon fa fa-check'></i>Dialog " + id + "</h4></div>",
+                height: 600,
+                width: 700,
+                title: "<div class='widget-header widget-header-small'><h4 class='smaller'><i class='ace-icon fa fa-file-text-o'></i> 编辑 " + id + "</h4></div>",
                 title_html: true,
                 buttons: [
                     {
@@ -174,8 +317,44 @@
                         }
                     },
                     {
+                        text: "Reset",
+                        class: "btn btn-warning btn-minier",
+                        click: function () {
+                            $('#myform').data('formValidation').resetForm();
+                        }
+                    },
+                    {
                         text: "OK",
                         "class": "btn btn-primary btn-minier",
+                        click: function () {
+                            //$(this).dialog("close");
+                            $('#myform').data('formValidation').validate();
+                        }
+                    }
+                ]
+            });
+        }
+
+        //confirm dialog
+        function delConfirm(id) {
+            $("#dialog-confirm").removeClass('hide').dialog({
+                resizable: false,
+                width: '320',
+                modal: true,
+                title: "<div class='widget-header'><h4 class='smaller'><i class='ace-icon fa fa-exclamation-triangle red'></i> Empty the recycle bin?</h4></div>",
+                title_html: true,
+                buttons: [
+                    {
+                        html: "<i class='ace-icon fa fa-trash-o bigger-110'></i>&nbsp; Delete all items",
+                        "class": "btn btn-danger btn-minier",
+                        click: function () {
+                            $(this).dialog("close");
+                        }
+                    }
+                    ,
+                    {
+                        html: "<i class='ace-icon fa fa-times bigger-110'></i>&nbsp; Cancel",
+                        "class": "btn btn-minier",
                         click: function () {
                             $(this).dialog("close");
                         }
