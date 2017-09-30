@@ -10,9 +10,8 @@ using Loan.Domain.RequestResponse;
 
 namespace Loan.Web.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
-        public ILoanRepository ILoanRepository { set; get; }
         public ActionResult Index()
         {
             return View();
@@ -52,7 +51,7 @@ namespace Loan.Web.Controllers
             var dataresult = new DataGridByPageResponse<WCFLog>(page, rows, count, list);
 
 
-            return Json(dataresult, JsonRequestBehavior.AllowGet);
+            return CustomJson(dataresult, JsonRequestBehavior.AllowGet);
         }
 
         public ActionResult SaveInfo(WCFLog model)
@@ -60,6 +59,13 @@ namespace Loan.Web.Controllers
 
 
             return Json(true, JsonRequestBehavior.AllowGet);
+        }
+
+        public ActionResult GetItemInfo(int itemId)
+        {
+            var item = ILoanRepository.GetById(itemId);
+
+            return CustomJson(item, JsonRequestBehavior.AllowGet,"yyyy/MM/dd");
         }
     }
 }

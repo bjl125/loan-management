@@ -55,18 +55,36 @@
             <div class="form-group">
                 <label class="col-sm-2 control-label">名称</label>
                 <div class="col-sm-9">
-                    <input type="text" name="title" data-fv-notempty class="form-control" placeholder="name" />
+                    <input type="text" name="ID" data-fv-notempty class="form-control" placeholder="ID" ng-model="ID" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Level</label>
+                <div class="col-sm-9">
+                    <input type="text" name="Level" data-fv-notempty class="form-control" placeholder="name" ng-model="Level" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Logger</label>
+                <div class="col-sm-9">
+                    <input type="text" name="Logger" data-fv-notempty class="form-control" placeholder="Logger" ng-model="Logger" />
                 </div>
             </div>
             <div class="form-group">
                 <label class="col-sm-2 control-label">时间</label>
                 <div class="col-sm-9">
                     <div class="input-group">
-                        <input class="form-control date-picker" id="id-date-picker2" name="formdate" type="text" ng-model="formdate" />
+                        <input class="form-control date-picker" id="id-date-picker2" name="Date" type="text" ng-model="Date" />
                         <span class="input-group-addon">
                             <i class="fa fa-calendar bigger-110"></i>
                         </span>
                     </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Exception</label>
+                <div class="col-sm-9">
+                    <textarea type="text" name="Exception" data-fv-notempty class="form-control" placeholder="Exception" ng-model="Exception"></textarea>
                 </div>
             </div>
             <div>
@@ -74,8 +92,9 @@
             </div>
         </form>
         <div>{{Level}}</div>
-        <h1>{{Id}}</h1>
-        <div>{{formdate}}</div>
+        <h1>{{ID}}</h1>
+        <div>{{Date}}</div>
+        <button class="btn btn-primary" ng-click="GetItemInfo()">GetInfo</button>
     </div>
 </div>
 @section scripts{
@@ -120,7 +139,7 @@
             $("#grid-table").jqGrid({
                 url: '/Home/GetList',
                 datatype: "json",
-                colNames: ['', 'Actions', 'Inv No', 'Date', 'Client', 'Amount', 'Tax'],
+                colNames: ['', 'Actions', 'ID','Level', 'Date', 'Logger', 'Message', 'Exception'],
                 colModel: [
                     {
                         name: 'myac', index: '', width: 100, fixed: true, sortable: false, resize: false,
@@ -140,6 +159,7 @@
                     },
                     { name: 'ID', index: 'ID', width: 80 },
                     { name: 'Level', index: 'Level', width: 90 },
+                    { name: 'Date', index: 'Date', width: 100 },
                     { name: 'Logger', index: 'Logger', width: 100 },
                     { name: 'Message', index: 'Message', align: "left" },
                     { name: 'Exception', index: 'Exception', width: 80, align: "right" }
@@ -226,7 +246,7 @@
             });
             $('#myform .date-picker').bdatepicker().on('changeDate', function (e) {
                 //console.log(e);
-                $('#myform').formValidation('revalidateField', 'formdate');
+                $('#myform').formValidation('revalidateField', 'Date');
                 //alert(e.date);
             });
 
@@ -267,7 +287,7 @@
                     validating: 'ace-icon fa fa-refresh fa-lg'
                 },
                 fields: {
-                    title: {
+                    Level: {
                         validators: {
                             stringLength: {
                                 min: 2,
@@ -276,7 +296,7 @@
                             }
                         }
                     },
-                    formdate: {
+                    Date: {
                         validators: {
                             notEmpty: {
                                 message: '请输入'
@@ -294,11 +314,7 @@
         });
 
         function openEditDialog(id) {
-            //angularjs
-            var $scope = getScope("homeController");
-            $scope.Id = id;
-            $scope.$apply();
-
+           
 
 
             //jquery ui dialog
@@ -331,7 +347,16 @@
                             $('#myform').data('formValidation').validate();
                         }
                     }
-                ]
+                ],
+                open: function (event, ui) {
+                    console.log(event);
+                    //angularjs
+                    var $scope = getScope("homeController");
+                    $scope.ID = id;
+                    $scope.$apply();
+
+                    $scope.GetItemInfo();
+                }
             });
         }
 
@@ -370,8 +395,22 @@
 
         angular.module("mainApp", [])
             .controller("homeController", function ($scope, $http, $location) {
-                $scope.Level = "Level 2";
-                $scope.Id;
+               // $scope.Level = "Level 2";
+                $scope.ID;
+
+
+                $scope.GetItemInfo = function () {
+                    $.getJSON('/Home/GetItemInfo', { itemId: $scope.ID }, function (result) {
+                        if (result) {
+                            console.log(result);
+                            $scope.Level = result.Level;
+                            $scope.Logger = result.Logger;
+                            $scope.Date = result.Date;
+                            $scope.Exception = result.Exception;
+
+                        }
+                    });
+                };
 
             });
 
